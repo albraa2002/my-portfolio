@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RFM Customer Segmentation Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .gradient-header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        }
+        .gold-accent {
+            color: #d4af37;
+        }
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .slider {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            border-radius: 5px;
+            background: #e5e7eb;
+            outline: none;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #1e3a8a;
+            cursor: pointer;
+        }
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #1e3a8a;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <div class="gradient-header text-white py-8 px-6 mb-8">
+        <div class="max-w-7xl mx-auto">
+            <h1 class="text-4xl font-bold mb-2">RFM Customer Segmentation</h1>
+            <p class="text-blue-100">Analyze customer behavior patterns using Recency, Frequency, and Monetary metrics</p>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 pb-12">
+        <!-- KPI Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-lg card-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Champions</p>
+                        <p class="text-3xl font-bold text-blue-900 mt-2" id="championCount">0</p>
+                    </div>
+                    <div class="bg-green-100 p-4 rounded-full">
+                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg card-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">At Risk Customers</p>
+                        <p class="text-3xl font-bold text-blue-900 mt-2" id="atRiskCount">0</p>
+                    </div>
+                    <div class="bg-red-100 p-4 rounded-full">
+                        <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg card-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Avg Customer Value</p>
+                        <p class="text-3xl font-bold gold-accent mt-2" id="avgValue">$0</p>
+                    </div>
+                    <div class="bg-yellow-100 p-4 rounded-full">
+                        <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="bg-white p-6 rounded-lg card-shadow mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-6">Scoring Threshold Controls</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Recency Threshold -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Recency Threshold (Days): <span id="recencyValue" class="gold-accent font-bold">180</span>
+                    </label>
+                    <input type="range" min="30" max="365" value="180" class="slider w-full" id="recencySlider">
+                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>30 days</span>
+                        <span>365 days</span>
+                    </div>
+                </div>
+
+                <!-- Frequency Threshold -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        High Frequency Threshold: <span id="frequencyValue" class="gold-accent font-bold">10</span>
+                    </label>
+                    <input type="range" min="3" max="30" value="10" class="slider w-full" id="frequencySlider">
+                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>3 orders</span>
+                        <span>30 orders</span>
+                    </div>
+                </div>
+
+                <!-- Monetary Threshold -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        High Spender Threshold: <span id="monetaryValue" class="gold-accent font-bold">$5000</span>
+                    </label>
+                    <input type="range" min="500" max="15000" step="100" value="5000" class="slider w-full" id="monetarySlider">
+                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>$500</span>
+                        <span>$15,000</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Bubble Chart -->
+            <div class="bg-white p-6 rounded-lg card-shadow">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Customer Segmentation Map</h3>
+                <canvas id="bubbleChart"></canvas>
+            </div>
+
+            <!-- Bar Chart -->
+            <div class="bg-white p-6 rounded-lg card-shadow">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Revenue by Segment</h3>
+                <canvas id="barChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Segment Details Table -->
+        <div class="bg-white p-6 rounded-lg card-shadow">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">Segment Breakdown</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Segment</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Count</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Revenue</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Revenue</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">% of Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="segmentTableBody" class="bg-white divide-y divide-gray-200">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // DATA GENERATION: Create 500 realistic customers
+        // ============================================
+        function generateCustomerData() {
+            const customers = [];
+            const today = new Date();
+            
+            for (let i = 1; i <= 500; i++) {
+                // Generate varied purchase patterns for realistic segmentation
+                const recencyDays = Math.floor(Math.random() * 365); // 0-365 days ago
+                const lastPurchaseDate = new Date(today);
+                lastPurchaseDate.setDate(lastPurchaseDate.getDate() - recencyDays);
+                
+                // Use different distributions for different customer types
+                let totalOrders, totalSpend;
+                
+                const customerType = Math.random();
+                if (customerType < 0.15) { // 15% Champions
+                    totalOrders = Math.floor(Math.random() * 20) + 10; // 10-30 orders
+                    totalSpend = Math.floor(Math.random() * 10000) + 5000; // $5K-$15K
+                } else if (customerType < 0.35) { // 20% Loyal
+                    totalOrders = Math.floor(Math.random() * 15) + 5; // 5-20 orders
+                    totalSpend = Math.floor(Math.random() * 5000) + 2000; // $2K-$7K
+                } else if (customerType < 0.55) { // 20% At Risk
+                    totalOrders = Math.floor(Math.random() * 10) + 3; // 3-13 orders
+                    totalSpend = Math.floor(Math.random() * 4000) + 1000; // $1K-$5K
+                } else { // 45% Hibernating/New/Others
+                    totalOrders = Math.floor(Math.random() * 5) + 1; // 1-6 orders
+                    totalSpend = Math.floor(Math.random() * 2000) + 100; // $100-$2.1K
+                }
+                
+                customers.push({
+                    id: `CUST-${String(i).padStart(4, '0')}`,
+                    lastPurchaseDate: lastPurchaseDate,
+                    totalOrders: totalOrders,
+                    totalSpend: totalSpend
+                });
+            }
+            
+            return customers;
+        }
+
+        // ============================================
+        // RFM SCORING ALGORITHM (1-5 scale)
+        // ============================================
+        function calculateRFMScores(customers, thresholds) {
+            const today = new Date();
+            
+            // Calculate Recency in days for each customer
+            const customersWithMetrics = customers.map(customer => {
+                const recencyDays = Math.floor((today - customer.lastPurchaseDate) / (1000 * 60 * 60 * 24));
+                return {
+                    ...customer,
+                    recencyDays: recencyDays,
+                    frequency: customer.totalOrders,
+                    monetary: customer.totalSpend
+                };
+            });
+            
+            // Calculate quintiles for each metric (for 1-5 scoring)
+            const recencyValues = customersWithMetrics.map(c => c.recencyDays).sort((a, b) => a - b);
+            const frequencyValues = customersWithMetrics.map(c => c.frequency).sort((a, b) => a - b);
+            const monetaryValues = customersWithMetrics.map(c => c.monetary).sort((a, b) => a - b);
+            
+            // Get quintile breakpoints
+            const getQuintile = (arr, value, reverse = false) => {
+                const q1 = arr[Math.floor(arr.length * 0.2)];
+                const q2 = arr[Math.floor(arr.length * 0.4)];
+                const q3 = arr[Math.floor(arr.length * 0.6)];
+                const q4 = arr[Math.floor(arr.length * 0.8)];
+                
+                let score;
+                if (value <= q1) score = 1;
+                else if (value <= q2) score = 2;
+                else if (value <= q3) score = 3;
+                else if (value <= q4) score = 4;
+                else score = 5;
+                
+                // For Recency, lower is better, so reverse the score
+                if (reverse) score = 6 - score;
+                
+                return score;
+            };
+            
+            // Assign RFM scores
+            const scoredCustomers = customersWithMetrics.map(customer => {
+                const rScore = getQuintile(recencyValues, customer.recencyDays, true); // Reverse: recent = high score
+                const fScore = getQuintile(frequencyValues, customer.frequency);
+                const mScore = getQuintile(monetaryValues, customer.monetary);
+                
+                return {
+                    ...customer,
+                    rScore,
+                    fScore,
+                    mScore,
+                    rfmScore: rScore * 100 + fScore * 10 + mScore // Combined score (e.g., 555)
+                };
+            });
+            
+            return scoredCustomers;
+        }
+
+        // ============================================
+        // CUSTOMER SEGMENTATION LOGIC
+        // ============================================
+        function segmentCustomers(scoredCustomers) {
+            return scoredCustomers.map(customer => {
+                const { rScore, fScore, mScore } = customer;
+                let segment;
+                
+                // Segmentation rules based on RFM scores
+                if (rScore >= 4 && fScore >= 4 && mScore >= 4) {
+                    segment = 'Champions'; // Best customers
+                } else if (rScore >= 3 && fScore >= 3 && mScore >= 3) {
+                    segment = 'Loyal'; // Regular, valuable customers
+                } else if (rScore <= 2 && fScore >= 3) {
+                    segment = 'At Risk'; // Haven't purchased recently but were active
+                } else if (rScore <= 2 && fScore <= 2) {
+                    segment = 'Hibernating'; // Inactive customers
+                } else if (rScore >= 4 && fScore <= 2) {
+                    segment = 'New Customers'; // Recent but not frequent
+                } else {
+                    segment = 'Potential'; // Middle ground
+                }
+                
+                return { ...customer, segment };
+            });
+        }
+
+        // ============================================
+        // VISUALIZATION FUNCTIONS
+        // ============================================
+        let bubbleChart, barChart;
+        
+        const segmentColors = {
+            'Champions': '#10b981',
+            'Loyal': '#3b82f6',
+            'At Risk': '#ef4444',
+            'Hibernating': '#6b7280',
+            'New Customers': '#8b5cf6',
+            'Potential': '#f59e0b'
+        };
+        
+        function createBubbleChart(segmentedCustomers) {
+            const ctx = document.getElementById('bubbleChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (bubbleChart) {
+                bubbleChart.destroy();
+            }
+            
+            // Group data by segment
+            const datasets = Object.keys(segmentColors).map(segment => {
+                const segmentData = segmentedCustomers
+                    .filter(c => c.segment === segment)
+                    .map(c => ({
+                        x: c.rScore,
+                        y: c.fScore,
+                        r: Math.sqrt(c.monetary) / 10 // Scale bubble size
+                    }));
+                
+                return {
+                    label: segment,
+                    data: segmentData,
+                    backgroundColor: segmentColors[segment] + '80', // Add transparency
+                    borderColor: segmentColors[segment],
+                    borderWidth: 2
+                };
+            });
+            
+            bubbleChart = new Chart(ctx, {
+                type: 'bubble',
+                data: { datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: R=${context.parsed.x}, F=${context.parsed.y}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Recency Score',
+                                font: { weight: 'bold' }
+                            },
+                            min: 0,
+                            max: 6
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Frequency Score',
+                                font: { weight: 'bold' }
+                            },
+                            min: 0,
+                            max: 6
+                        }
+                    }
+                }
+            });
+        }
+        
+        function createBarChart(segmentedCustomers) {
+            const ctx = document.getElementById('barChart').getContext('2d');
+            
+            // Destroy existing chart
+            if (barChart) {
+                barChart.destroy();
+            }
+            
+            // Calculate revenue by segment
+            const segmentRevenue = {};
+            segmentedCustomers.forEach(customer => {
+                if (!segmentRevenue[customer.segment]) {
+                    segmentRevenue[customer.segment] = 0;
+                }
+                segmentRevenue[customer.segment] += customer.monetary;
+            });
+            
+            const labels = Object.keys(segmentRevenue);
+            const data = Object.values(segmentRevenue);
+            const colors = labels.map(label => segmentColors[label]);
+            
+            barChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Revenue',
+                        data: data,
+                        backgroundColor: colors,
+                        borderColor: colors,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Revenue: $${context.parsed.y.toLocaleString()}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + (value / 1000).toFixed(0) + 'K';
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Total Revenue',
+                                font: { weight: 'bold' }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Customer Segment',
+                                font: { weight: 'bold' }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateKPIs(segmentedCustomers) {
+            const championCount = segmentedCustomers.filter(c => c.segment === 'Champions').length;
+            const atRiskCount = segmentedCustomers.filter(c => c.segment === 'At Risk').length;
+            const avgValue = segmentedCustomers.reduce((sum, c) => sum + c.monetary, 0) / segmentedCustomers.length;
+            
+            document.getElementById('championCount').textContent = championCount;
+            document.getElementById('atRiskCount').textContent = atRiskCount;
+            document.getElementById('avgValue').textContent = '$' + avgValue.toFixed(0).toLocaleString();
+        }
+        
+        function updateSegmentTable(segmentedCustomers) {
+            const segmentStats = {};
+            const totalRevenue = segmentedCustomers.reduce((sum, c) => sum + c.monetary, 0);
+            
+            segmentedCustomers.forEach(customer => {
+                if (!segmentStats[customer.segment]) {
+                    segmentStats[customer.segment] = {
+                        count: 0,
+                        totalRevenue: 0
+                    };
+                }
+                segmentStats[customer.segment].count++;
+                segmentStats[customer.segment].totalRevenue += customer.monetary;
+            });
+            
+            const tbody = document.getElementById('segmentTableBody');
+            tbody.innerHTML = '';
+            
+            Object.keys(segmentStats).forEach(segment => {
+                const stats = segmentStats[segment];
+                const avgRevenue = stats.totalRevenue / stats.count;
+                const percentOfTotal = (stats.totalRevenue / totalRevenue * 100).toFixed(1);
+                
+                const row = `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 rounded-full mr-2" style="background-color: ${segmentColors[segment]}"></div>
+                                <span class="text-sm font-medium text-gray-900">${segment}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${stats.count}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${avgRevenue.toFixed(0).toLocaleString()}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${stats.totalRevenue.toFixed(0).toLocaleString()}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${percentOfTotal}%</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+        
+        // ============================================
+        // MAIN EXECUTION & EVENT LISTENERS
+        // ============================================
+        let customerData = generateCustomerData();
+        
+        function updateDashboard() {
+            const thresholds = {
+                recency: parseInt(document.getElementById('recencySlider').value),
+                frequency: parseInt(document.getElementById('frequencySlider').value),
+                monetary: parseInt(document.getElementById('monetarySlider').value)
+            };
+            
+            const scoredCustomers = calculateRFMScores(customerData, thresholds);
+            const segmentedCustomers = segmentCustomers(scoredCustomers);
+            
+            updateKPIs(segmentedCustomers);
+            createBubbleChart(segmentedCustomers);
+            createBarChart(segmentedCustomers);
+            updateSegmentTable(segmentedCustomers);
+        }
+        
+        // Slider event listeners for real-time updates
+        document.getElementById('recencySlider').addEventListener('input', function(e) {
+            document.getElementById('recencyValue').textContent = e.target.value;
+            updateDashboard();
+        });
+        
+        document.getElementById('frequencySlider').addEventListener('input', function(e) {
+            document.getElementById('frequencyValue').textContent = e.target.value;
+            updateDashboard();
+        });
+        
+        document.getElementById('monetarySlider').addEventListener('input', function(e) {
+            document.getElementById('monetaryValue').textContent = '$' + parseInt(e.target.value).toLocaleString();
+            updateDashboard();
+        });
+        
+        // Initial dashboard render
+        updateDashboard();
+    </script>
+</body>
+</html>

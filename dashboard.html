@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SaaS Executive Dashboard - Command Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap');
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1d3a 100%);
+            background-attachment: fixed;
+        }
+        
+        .orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .glow-card {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .glow-card:hover {
+            border-color: rgba(139, 92, 246, 0.6);
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .neon-text {
+            text-shadow: 0 0 10px rgba(139, 92, 246, 0.8);
+        }
+        
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .7; }
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        .kpi-card {
+            background: linear-gradient(135deg, rgba(88, 28, 135, 0.2) 0%, rgba(30, 27, 75, 0.3) 100%);
+        }
+        
+        select {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(139, 92, 246, 0.4);
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: rgba(139, 92, 246, 0.8);
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+        }
+    </style>
+</head>
+<body class="text-gray-100 p-6">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8 flex justify-between items-center">
+            <div>
+                <h1 class="text-5xl font-black orbitron neon-text text-purple-400 mb-2">COMMAND CENTER</h1>
+                <p class="text-gray-400 text-lg">SaaS Performance Analytics • Real-time Monitoring</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <label class="text-purple-300 font-semibold orbitron">REGION:</label>
+                <select id="regionFilter" class="px-4 py-2 rounded-lg text-purple-300 font-semibold orbitron">
+                    <option value="global">GLOBAL</option>
+                    <option value="north_america">NORTH AMERICA</option>
+                    <option value="europe">EUROPE</option>
+                    <option value="asia">ASIA</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- MRR Card -->
+            <div class="glow-card rounded-xl p-6 kpi-card">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <p class="text-gray-400 text-sm uppercase tracking-wider">Monthly Recurring Revenue</p>
+                        <h2 class="text-3xl font-bold orbitron text-purple-300 mt-2" id="mrrValue">$0</h2>
+                    </div>
+                    <div class="text-2xl">💰</div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span id="mrrTrend" class="text-green-400 font-bold">↗ 0%</span>
+                    <span class="text-gray-500 text-sm">vs last month</span>
+                </div>
+            </div>
+
+            <!-- Churn Rate Card -->
+            <div class="glow-card rounded-xl p-6 kpi-card">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <p class="text-gray-400 text-sm uppercase tracking-wider">Churn Rate</p>
+                        <h2 class="text-3xl font-bold orbitron text-cyan-300 mt-2" id="churnValue">0%</h2>
+                    </div>
+                    <div class="text-2xl">📉</div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span id="churnTrend" class="text-green-400 font-bold">↘ 0%</span>
+                    <span class="text-gray-500 text-sm">vs last month</span>
+                </div>
+            </div>
+
+            <!-- New Subscribers Card -->
+            <div class="glow-card rounded-xl p-6 kpi-card">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <p class="text-gray-400 text-sm uppercase tracking-wider">New Subscribers</p>
+                        <h2 class="text-3xl font-bold orbitron text-pink-300 mt-2" id="subsValue">0</h2>
+                    </div>
+                    <div class="text-2xl">👥</div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span id="subsTrend" class="text-green-400 font-bold">↗ 0%</span>
+                    <span class="text-gray-500 text-sm">vs last month</span>
+                </div>
+            </div>
+
+            <!-- CAC Card -->
+            <div class="glow-card rounded-xl p-6 kpi-card">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <p class="text-gray-400 text-sm uppercase tracking-wider">Customer Acq. Cost</p>
+                        <h2 class="text-3xl font-bold orbitron text-orange-300 mt-2" id="cacValue">$0</h2>
+                    </div>
+                    <div class="text-2xl">🎯</div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span id="cacTrend" class="text-red-400 font-bold">↗ 0%</span>
+                    <span class="text-gray-500 text-sm">vs last month</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 1 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- MRR Growth Chart -->
+            <div class="glow-card rounded-xl p-6">
+                <h3 class="text-xl font-bold orbitron text-purple-300 mb-4 flex items-center gap-2">
+                    <span class="pulse">●</span> MRR GROWTH TRAJECTORY
+                </h3>
+                <div class="chart-container">
+                    <canvas id="mrrChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Subscriber Demographics Chart -->
+            <div class="glow-card rounded-xl p-6">
+                <h3 class="text-xl font-bold orbitron text-cyan-300 mb-4 flex items-center gap-2">
+                    <span class="pulse">●</span> SUBSCRIBER DEMOGRAPHICS
+                </h3>
+                <div class="chart-container">
+                    <canvas id="demoChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 2 -->
+        <div class="glow-card rounded-xl p-6">
+            <h3 class="text-xl font-bold orbitron text-pink-300 mb-4 flex items-center gap-2">
+                <span class="pulse">●</span> CHURN REASON ANALYSIS
+            </h3>
+            <div class="chart-container">
+                <canvas id="churnChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Comprehensive Dataset
+        const fullData = {
+            global: {
+                months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                mrr: [125000, 138000, 152000, 167000, 183000, 198000, 215000, 234000, 251000, 268000, 287000, 305000],
+                projected: [125000, 140000, 155000, 170000, 185000, 200000, 215000, 230000, 245000, 260000, 275000, 290000],
+                churnRate: [5.2, 4.8, 4.5, 4.3, 4.1, 3.9, 3.7, 3.5, 3.3, 3.1, 2.9, 2.7],
+                newSubs: [450, 520, 580, 640, 710, 760, 830, 890, 950, 1020, 1080, 1150],
+                cac: [285, 290, 295, 298, 305, 310, 315, 320, 325, 328, 332, 335],
+                demographics: {
+                    labels: ['Enterprise', 'Mid-Market', 'Small Business', 'Startups', 'Individual'],
+                    data: [35, 28, 22, 10, 5]
+                },
+                churnReasons: {
+                    labels: ['Price Sensitivity', 'Feature Gap', 'Poor Support', 'Competitor Switch', 'Product Complexity', 'Other'],
+                    data: [32, 24, 18, 15, 8, 3]
+                }
+            },
+            north_america: {
+                months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                mrr: [52000, 58000, 64000, 71000, 78000, 85000, 92000, 100000, 108000, 116000, 124000, 132000],
+                projected: [52000, 58000, 64000, 70000, 76000, 82000, 88000, 94000, 100000, 106000, 112000, 118000],
+                churnRate: [4.8, 4.5, 4.2, 4.0, 3.8, 3.6, 3.4, 3.2, 3.0, 2.8, 2.6, 2.4],
+                newSubs: [180, 210, 240, 270, 300, 330, 360, 390, 420, 450, 480, 510],
+                cac: [310, 315, 318, 322, 325, 330, 335, 338, 342, 345, 348, 350],
+                demographics: {
+                    labels: ['Enterprise', 'Mid-Market', 'Small Business', 'Startups', 'Individual'],
+                    data: [42, 30, 18, 7, 3]
+                },
+                churnReasons: {
+                    labels: ['Price Sensitivity', 'Feature Gap', 'Poor Support', 'Competitor Switch', 'Product Complexity', 'Other'],
+                    data: [28, 26, 20, 16, 7, 3]
+                }
+            },
+            europe: {
+                months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                mrr: [45000, 50000, 55000, 60000, 66000, 72000, 78000, 85000, 92000, 99000, 107000, 115000],
+                projected: [45000, 50000, 55000, 60000, 65000, 70000, 75000, 80000, 85000, 90000, 95000, 100000],
+                churnRate: [5.5, 5.1, 4.8, 4.5, 4.3, 4.0, 3.8, 3.6, 3.4, 3.2, 3.0, 2.8],
+                newSubs: [160, 185, 210, 235, 260, 285, 310, 335, 360, 385, 410, 440],
+                cac: [275, 280, 285, 288, 292, 295, 300, 305, 308, 312, 315, 318],
+                demographics: {
+                    labels: ['Enterprise', 'Mid-Market', 'Small Business', 'Startups', 'Individual'],
+                    data: [32, 29, 24, 10, 5]
+                },
+                churnReasons: {
+                    labels: ['Price Sensitivity', 'Feature Gap', 'Poor Support', 'Competitor Switch', 'Product Complexity', 'Other'],
+                    data: [35, 22, 18, 14, 8, 3]
+                }
+            },
+            asia: {
+                months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                mrr: [28000, 30000, 33000, 36000, 39000, 41000, 45000, 49000, 51000, 53000, 56000, 58000],
+                projected: [28000, 32000, 36000, 40000, 44000, 48000, 52000, 56000, 60000, 64000, 68000, 72000],
+                churnRate: [5.8, 5.4, 5.0, 4.7, 4.5, 4.2, 4.0, 3.8, 3.6, 3.4, 3.2, 3.0],
+                newSubs: [110, 125, 130, 135, 150, 145, 160, 165, 170, 185, 190, 200],
+                cac: [250, 255, 260, 265, 270, 275, 280, 285, 290, 292, 295, 298],
+                demographics: {
+                    labels: ['Enterprise', 'Mid-Market', 'Small Business', 'Startups', 'Individual'],
+                    data: [25, 25, 26, 15, 9]
+                },
+                churnReasons: {
+                    labels: ['Price Sensitivity', 'Feature Gap', 'Poor Support', 'Competitor Switch', 'Product Complexity', 'Other'],
+                    data: [40, 22, 15, 13, 7, 3]
+                }
+            }
+        };
+
+        let currentRegion = 'global';
+        let charts = {};
+
+        // Chart.js Global Config
+        Chart.defaults.color = '#9ca3af';
+        Chart.defaults.borderColor = 'rgba(139, 92, 246, 0.2)';
+        Chart.defaults.font.family = 'Rajdhani, sans-serif';
+
+        // Initialize Charts
+        function initCharts() {
+            const data = fullData[currentRegion];
+
+            // MRR Line Chart
+            const mrrCtx = document.getElementById('mrrChart').getContext('2d');
+            charts.mrr = new Chart(mrrCtx, {
+                type: 'line',
+                data: {
+                    labels: data.months,
+                    datasets: [
+                        {
+                            label: 'Actual MRR',
+                            data: data.mrr,
+                            borderColor: '#a78bfa',
+                            backgroundColor: 'rgba(167, 139, 250, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: '#a78bfa',
+                            pointBorderColor: '#1e1b4b',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        },
+                        {
+                            label: 'Projected MRR',
+                            data: data.projected,
+                            borderColor: '#22d3ee',
+                            backgroundColor: 'rgba(34, 211, 238, 0.05)',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            tension: 0.4,
+                            fill: false,
+                            pointBackgroundColor: '#22d3ee',
+                            pointBorderColor: '#1e1b4b',
+                            pointBorderWidth: 2,
+                            pointRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15,
+                                font: { size: 12, weight: 'bold' }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                            titleColor: '#a78bfa',
+                            bodyColor: '#e5e7eb',
+                            borderColor: '#a78bfa',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: true,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': $' + context.parsed.y.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                color: 'rgba(139, 92, 246, 0.1)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + (value / 1000) + 'K';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(139, 92, 246, 0.05)'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Demographics Doughnut Chart
+            const demoCtx = document.getElementById('demoChart').getContext('2d');
+            charts.demo = new Chart(demoCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.demographics.labels,
+                    datasets: [{
+                        data: data.demographics.data,
+                        backgroundColor: [
+                            '#a78bfa',
+                            '#22d3ee',
+                            '#f472b6',
+                            '#fb923c',
+                            '#4ade80'
+                        ],
+                        borderColor: '#1e1b4b',
+                        borderWidth: 3,
+                        hoverOffset: 20
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'right',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15,
+                                font: { size: 12, weight: 'bold' }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                            titleColor: '#22d3ee',
+                            bodyColor: '#e5e7eb',
+                            borderColor: '#22d3ee',
+                            borderWidth: 1,
+                            padding: 12,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Churn Reasons Bar Chart
+            const churnCtx = document.getElementById('churnChart').getContext('2d');
+            charts.churn = new Chart(churnCtx, {
+                type: 'bar',
+                data: {
+                    labels: data.churnReasons.labels,
+                    datasets: [{
+                        label: 'Churn %',
+                        data: data.churnReasons.data,
+                        backgroundColor: [
+                            'rgba(244, 114, 182, 0.8)',
+                            'rgba(251, 146, 60, 0.8)',
+                            'rgba(167, 139, 250, 0.8)',
+                            'rgba(34, 211, 238, 0.8)',
+                            'rgba(74, 222, 128, 0.8)',
+                            'rgba(156, 163, 175, 0.8)'
+                        ],
+                        borderColor: [
+                            '#f472b6',
+                            '#fb923c',
+                            '#a78bfa',
+                            '#22d3ee',
+                            '#4ade80',
+                            '#9ca3af'
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                            titleColor: '#f472b6',
+                            bodyColor: '#e5e7eb',
+                            borderColor: '#f472b6',
+                            borderWidth: 1,
+                            padding: 12,
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Churn Rate: ' + context.parsed.y + '%';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(139, 92, 246, 0.1)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update KPI Cards
+        function updateKPIs() {
+            const data = fullData[currentRegion];
+            const currentMonth = data.months.length - 1;
+            const prevMonth = currentMonth - 1;
+
+            // MRR
+            const currentMRR = data.mrr[currentMonth];
+            const prevMRR = data.mrr[prevMonth];
+            const mrrChange = ((currentMRR - prevMRR) / prevMRR * 100).toFixed(1);
+            document.getElementById('mrrValue').textContent = '$' + currentMRR.toLocaleString();
+            const mrrTrendEl = document.getElementById('mrrTrend');
+            mrrTrendEl.textContent = (mrrChange >= 0 ? '↗ +' : '↘ ') + mrrChange + '%';
+            mrrTrendEl.className = mrrChange >= 0 ? 'text-green-400 font-bold' : 'text-red-400 font-bold';
+
+            // Churn Rate
+            const currentChurn = data.churnRate[currentMonth];
+            const prevChurn = data.churnRate[prevMonth];
+            const churnChange = ((currentChurn - prevChurn) / prevChurn * 100).toFixed(1);
+            document.getElementById('churnValue').textContent = currentChurn.toFixed(1) + '%';
+            const churnTrendEl = document.getElementById('churnTrend');
+            churnTrendEl.textContent = (churnChange <= 0 ? '↘ ' : '↗ +') + Math.abs(churnChange) + '%';
+            churnTrendEl.className = churnChange <= 0 ? 'text-green-400 font-bold' : 'text-red-400 font-bold';
+
+            // New Subscribers
+            const currentSubs = data.newSubs[currentMonth];
+            const prevSubs = data.newSubs[prevMonth];
+            const subsChange = ((currentSubs - prevSubs) / prevSubs * 100).toFixed(1);
+            document.getElementById('subsValue').textContent = currentSubs.toLocaleString();
+            const subsTrendEl = document.getElementById('subsTrend');
+            subsTrendEl.textContent = (subsChange >= 0 ? '↗ +' : '↘ ') + subsChange + '%';
+            subsTrendEl.className = subsChange >= 0 ? 'text-green-400 font-bold' : 'text-red-400 font-bold';
+
+            // CAC
+            const currentCAC = data.cac[currentMonth];
+            const prevCAC = data.cac[prevMonth];
+            const cacChange = ((currentCAC - prevCAC) / prevCAC * 100).toFixed(1);
+            document.getElementById('cacValue').textContent = '$' + currentCAC;
+            const cacTrendEl = document.getElementById('cacTrend');
+            cacTrendEl.textContent = (cacChange >= 0 ? '↗ +' : '↘ ') + cacChange + '%';
+            cacTrendEl.className = cacChange <= 0 ? 'text-green-400 font-bold' : 'text-red-400 font-bold';
+        }
+
+        // Update Charts with New Data
+        function updateCharts() {
+            const data = fullData[currentRegion];
+
+            // Update MRR Chart
+            charts.mrr.data.datasets[0].data = data.mrr;
+            charts.mrr.data.datasets[1].data = data.projected;
+            charts.mrr.update();
+
+            // Update Demographics Chart
+            charts.demo.data.datasets[0].data = data.demographics.data;
+            charts.demo.update();
+
+            // Update Churn Chart
+            charts.churn.data.datasets[0].data = data.churnReasons.data;
+            charts.churn.update();
+        }
+
+        // Region Filter Handler
+        document.getElementById('regionFilter').addEventListener('change', function(e) {
+            currentRegion = e.target.value;
+            updateKPIs();
+            updateCharts();
+        });
+
+        // Initialize Dashboard
+        initCharts();
+        updateKPIs();
+    </script>
+</body>
+</html>

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌙 Ramadan Market Inflation & Price Tracker — Egypt 2025</title>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #080c10;
+    --panel: #0d1117;
+    --surface: #161b22;
+    --border: #21262d;
+    --gold: #c9982a;
+    --gold-light: #f0c050;
+    --green: #3fb950;
+    --red: #f85149;
+    --orange: #e3772d;
+    --blue: #58a6ff;
+    --text: #e6edf3;
+    --muted: #7d8590;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #0d1117 0%, #0f1923 50%, #0d1117 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 40px 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 80% at 50% -20%, rgba(201,152,42,0.12), transparent);
+    pointer-events: none;
+  }
+  .header-crescent {
+    position: absolute;
+    right: 40px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 64px;
+    opacity: 0.18;
+    filter: drop-shadow(0 0 20px var(--gold));
+  }
+  .header-title {
+    font-family: 'Amiri', serif;
+    font-size: 2.1rem;
+    font-weight: 700;
+    color: var(--gold-light);
+    letter-spacing: 0.02em;
+    text-shadow: 0 0 30px rgba(240,192,80,0.4);
+    line-height: 1.2;
+  }
+  .header-sub {
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* KPI Row */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    padding: 20px 32px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+  }
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent-color, var(--gold));
+    border-radius: 8px 8px 0 0;
+  }
+  .kpi-label {
+    font-size: 0.62rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+  .kpi-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--accent-color, var(--text));
+  }
+  .kpi-sub {
+    font-size: 0.6rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* Charts grid */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 16px;
+    padding: 20px 32px 32px;
+    background: var(--bg);
+  }
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .chart-header {
+    padding: 14px 20px 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0;
+  }
+  .chart-title {
+    font-family: 'Amiri', serif;
+    font-size: 1.05rem;
+    color: var(--gold-light);
+    margin-bottom: 4px;
+  }
+  .chart-desc {
+    font-size: 0.62rem;
+    color: var(--muted);
+    padding-bottom: 10px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .chart-card.wide { grid-column: span 2; }
+  .chart-card.scatter { grid-row: 1; grid-column: 1; }
+  .chart-card.pie { grid-row: 1; grid-column: 2; }
+  .chart-card.bar { grid-row: 2; grid-column: span 2; }
+
+  /* Bottom watermark */
+  .footer {
+    text-align: center;
+    padding: 14px;
+    color: var(--muted);
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Legend chips */
+  .legend-chips {
+    display: flex;
+    gap: 12px;
+    padding: 8px 20px 12px;
+    flex-wrap: wrap;
+  }
+  .chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.68rem;
+    color: var(--muted);
+  }
+  .chip-dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-crescent">🌙</div>
+  <div class="header-title">🌙 Ramadan Market Inflation & Price Tracker</div>
+  <div class="header-sub">Egypt 2025 · Synthetic Market Dataset · 100 Grocery Items Tracked</div>
+</header>
+
+<!-- KPI CARDS -->
+<div class="kpi-row">
+  <div class="kpi-card" style="--accent-color: var(--gold)">
+    <div class="kpi-label">Items Tracked</div>
+    <div class="kpi-value">100</div>
+    <div class="kpi-sub">5 Categories</div>
+  </div>
+  <div class="kpi-card" style="--accent-color: var(--red)">
+    <div class="kpi-label">Avg Inflation</div>
+    <div class="kpi-value">+12.45%</div>
+    <div class="kpi-sub">Shaaban → Ramadan</div>
+  </div>
+  <div class="kpi-card" style="--accent-color: var(--red)">
+    <div class="kpi-label">Fake Discounts</div>
+    <div class="kpi-value">35</div>
+    <div class="kpi-sub">35% have sale tags</div>
+  </div>
+  <div class="kpi-card" style="--accent-color: var(--green)">
+    <div class="kpi-label">Real Discounts</div>
+    <div class="kpi-value">5</div>
+    <div class="kpi-sub">Genuine savings</div>
+  </div>
+  <div class="kpi-card" style="--accent-color: var(--orange)">
+    <div class="kpi-label">Inflated Items</div>
+    <div class="kpi-value">54</div>
+    <div class="kpi-sub">No discount tag</div>
+  </div>
+  <div class="kpi-card" style="--accent-color: var(--gold-light)">
+    <div class="kpi-label">Hardest Hit</div>
+    <div class="kpi-value" style="font-size:0.85rem; line-height:1.2">Oils & Ghee</div>
+    <div class="kpi-sub">+13.8% avg</div>
+  </div>
+</div>
+
+<!-- CHARTS GRID -->
+<div class="charts-grid">
+
+  <!-- Scatter Plot -->
+  <div class="chart-card scatter">
+    <div class="chart-header">
+      <div class="chart-title">🔍 Shaaban vs Ramadan Price — Exposing Fake Discounts</div>
+      <div class="chart-desc">Points above the dashed line = price increase · Color = Pricing Status</div>
+    </div>
+    <div class="legend-chips">
+      <div class="chip"><div class="chip-dot" style="background:#3fb950"></div>Real Discount</div>
+      <div class="chip"><div class="chip-dot" style="background:#f85149"></div>Fake Discount</div>
+      <div class="chip"><div class="chip-dot" style="background:#e3772d"></div>Inflated (No Sale)</div>
+      <div class="chip"><div class="chip-dot" style="background:#58a6ff"></div>Stable</div>
+      <div class="chip"><div class="chip-dot" style="background:rgba(255,255,255,0.3); border-radius:0; height:2px; width:18px; margin: 0 2px"></div>No Change</div>
+    </div>
+    <div id="scatter" style="height:420px"></div>
+  </div>
+
+  <!-- Pie Chart -->
+  <div class="chart-card pie">
+    <div class="chart-header">
+      <div class="chart-title">🥧 Pricing Status Breakdown</div>
+      <div class="chart-desc">How many items are genuinely on sale?</div>
+    </div>
+    <div id="pie" style="height:460px"></div>
+  </div>
+
+  <!-- Bar Chart (full width) -->
+  <div class="chart-card bar">
+    <div class="chart-header">
+      <div class="chart-title">📊 Average Inflation % by Category — Which Sector Got Hit Hardest?</div>
+      <div class="chart-desc">Red = price increase · Green = price decrease</div>
+    </div>
+    <div id="bar" style="height:240px"></div>
+  </div>
+
+</div>
+
+<footer class="footer">
+  DATA: SYNTHETIC DATASET — GENERATED FOR PORTFOLIO USE ONLY &nbsp;|&nbsp;
+  ANALYST: SENIOR MARKET RESEARCHER, EGYPT &nbsp;|&nbsp;
+  BUILT WITH PYTHON + PLOTLY
+</footer>
+
+<script>
+const DATA = [{"Category": "Yamesh (Nuts/Dates)", "Item_Name": "Dates 1kg (Medjool)", "Price_Shaaban_EGP": 185.45, "Price_Ramadan_EGP": 250.36, "Has_Discount_Tag": false, "Price_Difference": 64.91, "Inflation_Percentage": 35.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Yamesh (Nuts/Dates)", "Item_Name": "Dates 1kg (Zahidi)", "Price_Shaaban_EGP": 269.5, "Price_Ramadan_EGP": 269.5, "Has_Discount_Tag": true, "Price_Difference": 0.0, "Inflation_Percentage": 0.0, "Pricing_Status": "Stable"}, {"Category": "Yamesh (Nuts/Dates)", "Item_Name": "Mixed Nuts 500g", "Price_Shaaban_EGP": 66.78, "Price_Ramadan_EGP": 83.48, "Has_Discount_Tag": false, "Price_Difference": 16.7, "Inflation_Percentage": 25.01, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Yamesh (Nuts/Dates)", "Item_Name": "Cashews 250g", "Price_Shaaban_EGP": 310.53, "Price_Ramadan_EGP": 263.95, "Has_Discount_Tag": false, "Price_Difference": -46.58, "Inflation_Percentage": -15.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Yamesh (Nuts/Dates)", "Item_Name": "Pistachios 250g", "Price_Shaaban_EGP": 357.17, "Price_Ramadan_EGP": 364.31, "Has_Discount_Tag": true, "Price_Difference": 7.14, "Inflation_Percentage": 2.0, "Pricing_Status": "Fake Discount"}, {"Category": "Yamesh (Nuts/Dates)", "Item_Name": "Almonds 250g", "Price_Shaaban_EGP": 113.78, "Price_Ramadan_EGP": 122.88, "Has_Discount_Tag": false, "Price_Difference": 9.1, "Inflation_Percentage": 8.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Yamesh (Nuts/Dates)", "Item_Name": "Walnuts 250g", "Price_Shaaban_EGP": 206.98, "Price_Ramadan_EGP": 223.54, "Has_Discount_Tag": false, "Price_Difference": 16.56, "Inflation_Percentage": 8.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Yamesh (Nuts/Dates)", "Item_Name": "Hazelnuts 250g", "Price_Shaaban_EGP": 97.31, "Price_Ramadan_EGP": 105.09, "Has_Discount_Tag": true, "Price_Difference": 7.78, "Inflation_Percentage": 8.0, "Pricing_Status": "Fake Discount"}, {"Category": "Yamesh (Nuts/Dates)", "Item_Name": "Qamar El Din 400g", "Price_Shaaban_EGP": 216.03, "Price_Ramadan_EGP": 270.04, "Has_Discount_Tag": true, "Price_Difference": 54.01, "Inflation_Percentage": 25.0, "Pricing_Status": "Fake Discount"}, {"Category": "Yamesh (Nuts/Dates)", "Item_Name": "Dried Apricots 250g", "Price_Shaaban_EGP": 237.84, "Price_Ramadan_EGP": 266.38, "Has_Discount_Tag": true, "Price_Difference": 28.54, "Inflation_Percentage": 12.0, "Pricing_Status": "Fake Discount"}, {"Category": "Yamesh (Nuts/Dates)", "Item_Name": "Dried Figs 250g", "Price_Shaaban_EGP": 272.83, "Price_Ramadan_EGP": 272.83, "Has_Discount_Tag": true, "Price_Difference": 0.0, "Inflation_Percentage": 0.0, "Pricing_Status": "Stable"}, {"Category": "Yamesh (Nuts/Dates)", "Item_Name": "Raisins 500g", "Price_Shaaban_EGP": 400.83, "Price_Ramadan_EGP": 541.12, "Has_Discount_Tag": false, "Price_Difference": 140.29, "Inflation_Percentage": 35.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Yamesh (Nuts/Dates)", "Item_Name": "Sunflower Seeds 250g", "Price_Shaaban_EGP": 159.23, "Price_Ramadan_EGP": 151.27, "Has_Discount_Tag": false, "Price_Difference": -7.96, "Inflation_Percentage": -5.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Yamesh (Nuts/Dates)", "Item_Name": "Pumpkin Seeds 250g", "Price_Shaaban_EGP": 210.06, "Price_Ramadan_EGP": 199.56, "Has_Discount_Tag": false, "Price_Difference": -10.5, "Inflation_Percentage": -5.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Yamesh (Nuts/Dates)", "Item_Name": "Pine Nuts 100g", "Price_Shaaban_EGP": 57.9, "Price_Ramadan_EGP": 78.17, "Has_Discount_Tag": true, "Price_Difference": 20.27, "Inflation_Percentage": 35.01, "Pricing_Status": "Fake Discount"}, {"Category": "Yamesh (Nuts/Dates)", "Item_Name": "Peanuts Roasted 500g", "Price_Shaaban_EGP": 293.45, "Price_Ramadan_EGP": 316.93, "Has_Discount_Tag": false, "Price_Difference": 23.48, "Inflation_Percentage": 8.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Yamesh (Nuts/Dates)", "Item_Name": "Chickpeas Roasted 250g", "Price_Shaaban_EGP": 250.02, "Price_Ramadan_EGP": 250.02, "Has_Discount_Tag": false, "Price_Difference": 0.0, "Inflation_Percentage": 0.0, "Pricing_Status": "Stable"}, {"Category": "Yamesh (Nuts/Dates)", "Item_Name": "Dates Stuffed 200g", "Price_Shaaban_EGP": 335.67, "Price_Ramadan_EGP": 453.15, "Has_Discount_Tag": false, "Price_Difference": 117.48, "Inflation_Percentage": 35.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Yamesh (Nuts/Dates)", "Item_Name": "Mixed Dried Fruit 500g", "Price_Shaaban_EGP": 269.21, "Price_Ramadan_EGP": 363.43, "Has_Discount_Tag": true, "Price_Difference": 94.22, "Inflation_Percentage": 35.0, "Pricing_Status": "Fake Discount"}, {"Category": "Yamesh (Nuts/Dates)", "Item_Name": "Carob Powder 250g", "Price_Shaaban_EGP": 118.49, "Price_Ramadan_EGP": 106.64, "Has_Discount_Tag": true, "Price_Difference": -11.85, "Inflation_Percentage": -10.0, "Pricing_Status": "Real Discount"}, {"Category": "Meat & Poultry", "Item_Name": "Baladi Meat 1kg", "Price_Shaaban_EGP": 223.24, "Price_Ramadan_EGP": 241.1, "Has_Discount_Tag": false, "Price_Difference": 17.86, "Inflation_Percentage": 8.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Meat & Poultry", "Item_Name": "Veal 1kg", "Price_Shaaban_EGP": 209.84, "Price_Ramadan_EGP": 226.63, "Has_Discount_Tag": false, "Price_Difference": 16.79, "Inflation_Percentage": 8.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Meat & Poultry", "Item_Name": "Lamb Leg 1kg", "Price_Shaaban_EGP": 119.19, "Price_Ramadan_EGP": 148.99, "Has_Discount_Tag": true, "Price_Difference": 29.8, "Inflation_Percentage": 25.0, "Pricing_Status": "Fake Discount"}, {"Category": "Meat & Poultry", "Item_Name": "Ground Beef 500g", "Price_Shaaban_EGP": 474.49, "Price_Ramadan_EGP": 559.9, "Has_Discount_Tag": true, "Price_Difference": 85.41, "Inflation_Percentage": 18.0, "Pricing_Status": "Fake Discount"}, {"Category": "Meat & Poultry", "Item_Name": "Chicken Whole 1kg", "Price_Shaaban_EGP": 62.32, "Price_Ramadan_EGP": 77.9, "Has_Discount_Tag": false, "Price_Difference": 15.58, "Inflation_Percentage": 25.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Meat & Poultry", "Item_Name": "Chicken Breast 1kg", "Price_Shaaban_EGP": 366.18, "Price_Ramadan_EGP": 432.09, "Has_Discount_Tag": true, "Price_Difference": 65.91, "Inflation_Percentage": 18.0, "Pricing_Status": "Fake Discount"}, {"Category": "Meat & Poultry", "Item_Name": "Chicken Thighs 1kg", "Price_Shaaban_EGP": 210.56, "Price_Ramadan_EGP": 200.03, "Has_Discount_Tag": false, "Price_Difference": -10.53, "Inflation_Percentage": -5.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Meat & Poultry", "Item_Name": "Turkey Fillet 500g", "Price_Shaaban_EGP": 321.79, "Price_Ramadan_EGP": 347.53, "Has_Discount_Tag": true, "Price_Difference": 25.74, "Inflation_Percentage": 8.0, "Pricing_Status": "Fake Discount"}, {"Category": "Meat & Poultry", "Item_Name": "Liver Beef 500g", "Price_Shaaban_EGP": 190.61, "Price_Ramadan_EGP": 205.86, "Has_Discount_Tag": false, "Price_Difference": 15.25, "Inflation_Percentage": 8.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Meat & Poultry", "Item_Name": "Kofta Mix 500g", "Price_Shaaban_EGP": 327.77, "Price_Ramadan_EGP": 409.71, "Has_Discount_Tag": false, "Price_Difference": 81.94, "Inflation_Percentage": 25.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Meat & Poultry", "Item_Name": "Sausage Beef 300g", "Price_Shaaban_EGP": 110.23, "Price_Ramadan_EGP": 130.07, "Has_Discount_Tag": false, "Price_Difference": 19.84, "Inflation_Percentage": 18.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Meat & Poultry", "Item_Name": "Pastrami 200g", "Price_Shaaban_EGP": 295.74, "Price_Ramadan_EGP": 348.97, "Has_Discount_Tag": false, "Price_Difference": 53.23, "Inflation_Percentage": 18.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Meat & Poultry", "Item_Name": "Mortadella 200g", "Price_Shaaban_EGP": 279.55, "Price_Ramadan_EGP": 313.1, "Has_Discount_Tag": true, "Price_Difference": 33.55, "Inflation_Percentage": 12.0, "Pricing_Status": "Fake Discount"}, {"Category": "Meat & Poultry", "Item_Name": "Fish Tilapia 1kg", "Price_Shaaban_EGP": 105.31, "Price_Ramadan_EGP": 89.51, "Has_Discount_Tag": false, "Price_Difference": -15.8, "Inflation_Percentage": -15.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Meat & Poultry", "Item_Name": "Shrimp 500g", "Price_Shaaban_EGP": 192.03, "Price_Ramadan_EGP": 215.07, "Has_Discount_Tag": false, "Price_Difference": 23.04, "Inflation_Percentage": 12.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Meat & Poultry", "Item_Name": "Tuna Canned 180g", "Price_Shaaban_EGP": 164.7, "Price_Ramadan_EGP": 184.46, "Has_Discount_Tag": false, "Price_Difference": 19.76, "Inflation_Percentage": 12.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Meat & Poultry", "Item_Name": "Sardines Canned 125g", "Price_Shaaban_EGP": 156.1, "Price_Ramadan_EGP": 140.49, "Has_Discount_Tag": true, "Price_Difference": -15.61, "Inflation_Percentage": -10.0, "Pricing_Status": "Real Discount"}, {"Category": "Meat & Poultry", "Item_Name": "Duck Whole 1kg", "Price_Shaaban_EGP": 127.71, "Price_Ramadan_EGP": 172.41, "Has_Discount_Tag": false, "Price_Difference": 44.7, "Inflation_Percentage": 35.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Meat & Poultry", "Item_Name": "Quail 4pcs", "Price_Shaaban_EGP": 326.03, "Price_Ramadan_EGP": 407.54, "Has_Discount_Tag": false, "Price_Difference": 81.51, "Inflation_Percentage": 25.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Meat & Poultry", "Item_Name": "Rabbit 1kg", "Price_Shaaban_EGP": 138.36, "Price_Ramadan_EGP": 172.95, "Has_Discount_Tag": false, "Price_Difference": 34.59, "Inflation_Percentage": 25.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Dairy", "Item_Name": "Milk 1L (Fresh)", "Price_Shaaban_EGP": 230.9, "Price_Ramadan_EGP": 288.62, "Has_Discount_Tag": true, "Price_Difference": 57.72, "Inflation_Percentage": 25.0, "Pricing_Status": "Fake Discount"}, {"Category": "Dairy", "Item_Name": "Milk 1L (UHT)", "Price_Shaaban_EGP": 53.06, "Price_Ramadan_EGP": 54.12, "Has_Discount_Tag": false, "Price_Difference": 1.06, "Inflation_Percentage": 2.0, "Pricing_Status": "Stable"}, {"Category": "Dairy", "Item_Name": "Yogurt 500g", "Price_Shaaban_EGP": 233.59, "Price_Ramadan_EGP": 291.99, "Has_Discount_Tag": true, "Price_Difference": 58.4, "Inflation_Percentage": 25.0, "Pricing_Status": "Fake Discount"}, {"Category": "Dairy", "Item_Name": "Yogurt Rayeb 500g", "Price_Shaaban_EGP": 155.24, "Price_Ramadan_EGP": 173.87, "Has_Discount_Tag": true, "Price_Difference": 18.63, "Inflation_Percentage": 12.0, "Pricing_Status": "Fake Discount"}, {"Category": "Dairy", "Item_Name": "Cream Cheese 200g", "Price_Shaaban_EGP": 55.57, "Price_Ramadan_EGP": 60.02, "Has_Discount_Tag": false, "Price_Difference": 4.45, "Inflation_Percentage": 8.01, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Dairy", "Item_Name": "Feta Cheese 250g", "Price_Shaaban_EGP": 107.42, "Price_Ramadan_EGP": 120.31, "Has_Discount_Tag": false, "Price_Difference": 12.89, "Inflation_Percentage": 12.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Dairy", "Item_Name": "White Cheese 250g", "Price_Shaaban_EGP": 117.73, "Price_Ramadan_EGP": 158.94, "Has_Discount_Tag": false, "Price_Difference": 41.21, "Inflation_Percentage": 35.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Dairy", "Item_Name": "Rumi Cheese 200g", "Price_Shaaban_EGP": 89.2, "Price_Ramadan_EGP": 99.9, "Has_Discount_Tag": true, "Price_Difference": 10.7, "Inflation_Percentage": 12.0, "Pricing_Status": "Fake Discount"}, {"Category": "Dairy", "Item_Name": "Butter 200g", "Price_Shaaban_EGP": 97.63, "Price_Ramadan_EGP": 82.99, "Has_Discount_Tag": false, "Price_Difference": -14.64, "Inflation_Percentage": -15.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Dairy", "Item_Name": "Ghee Baladi 500g", "Price_Shaaban_EGP": 153.18, "Price_Ramadan_EGP": 137.86, "Has_Discount_Tag": true, "Price_Difference": -15.32, "Inflation_Percentage": -10.0, "Pricing_Status": "Real Discount"}, {"Category": "Dairy", "Item_Name": "Heavy Cream 200ml", "Price_Shaaban_EGP": 256.61, "Price_Ramadan_EGP": 261.74, "Has_Discount_Tag": true, "Price_Difference": 5.13, "Inflation_Percentage": 2.0, "Pricing_Status": "Fake Discount"}, {"Category": "Dairy", "Item_Name": "Sour Cream 200g", "Price_Shaaban_EGP": 149.81, "Price_Ramadan_EGP": 202.24, "Has_Discount_Tag": true, "Price_Difference": 52.43, "Inflation_Percentage": 35.0, "Pricing_Status": "Fake Discount"}, {"Category": "Dairy", "Item_Name": "Eggs 30pcs", "Price_Shaaban_EGP": 196.39, "Price_Ramadan_EGP": 231.74, "Has_Discount_Tag": true, "Price_Difference": 35.35, "Inflation_Percentage": 18.0, "Pricing_Status": "Fake Discount"}, {"Category": "Dairy", "Item_Name": "Eggs 15pcs", "Price_Shaaban_EGP": 210.7, "Price_Ramadan_EGP": 227.56, "Has_Discount_Tag": false, "Price_Difference": 16.86, "Inflation_Percentage": 8.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Dairy", "Item_Name": "Labneh 200g", "Price_Shaaban_EGP": 186.55, "Price_Ramadan_EGP": 208.94, "Has_Discount_Tag": true, "Price_Difference": 22.39, "Inflation_Percentage": 12.0, "Pricing_Status": "Fake Discount"}, {"Category": "Dairy", "Item_Name": "Kiri Cheese 8pcs", "Price_Shaaban_EGP": 238.0, "Price_Ramadan_EGP": 257.04, "Has_Discount_Tag": true, "Price_Difference": 19.04, "Inflation_Percentage": 8.0, "Pricing_Status": "Fake Discount"}, {"Category": "Dairy", "Item_Name": "Mozzarella 250g", "Price_Shaaban_EGP": 35.4, "Price_Ramadan_EGP": 39.65, "Has_Discount_Tag": false, "Price_Difference": 4.25, "Inflation_Percentage": 12.01, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Dairy", "Item_Name": "Condensed Milk 400g", "Price_Shaaban_EGP": 29.23, "Price_Ramadan_EGP": 32.74, "Has_Discount_Tag": true, "Price_Difference": 3.51, "Inflation_Percentage": 12.01, "Pricing_Status": "Fake Discount"}, {"Category": "Dairy", "Item_Name": "Evaporated Milk 410g", "Price_Shaaban_EGP": 189.52, "Price_Ramadan_EGP": 189.52, "Has_Discount_Tag": false, "Price_Difference": 0.0, "Inflation_Percentage": 0.0, "Pricing_Status": "Stable"}, {"Category": "Dairy", "Item_Name": "Powdered Milk 400g", "Price_Shaaban_EGP": 123.62, "Price_Ramadan_EGP": 166.89, "Has_Discount_Tag": true, "Price_Difference": 43.27, "Inflation_Percentage": 35.0, "Pricing_Status": "Fake Discount"}, {"Category": "Grains (Rice/Pasta)", "Item_Name": "Egyptian Rice 2kg", "Price_Shaaban_EGP": 66.43, "Price_Ramadan_EGP": 63.11, "Has_Discount_Tag": false, "Price_Difference": -3.32, "Inflation_Percentage": -5.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Grains (Rice/Pasta)", "Item_Name": "Basmati Rice 1kg", "Price_Shaaban_EGP": 142.58, "Price_Ramadan_EGP": 153.99, "Has_Discount_Tag": false, "Price_Difference": 11.41, "Inflation_Percentage": 8.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Grains (Rice/Pasta)", "Item_Name": "Spaghetti 400g", "Price_Shaaban_EGP": 134.05, "Price_Ramadan_EGP": 150.14, "Has_Discount_Tag": false, "Price_Difference": 16.09, "Inflation_Percentage": 12.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Grains (Rice/Pasta)", "Item_Name": "Penne 400g", "Price_Shaaban_EGP": 52.34, "Price_Ramadan_EGP": 49.72, "Has_Discount_Tag": false, "Price_Difference": -2.62, "Inflation_Percentage": -5.01, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Grains (Rice/Pasta)", "Item_Name": "Macaroni 400g", "Price_Shaaban_EGP": 145.86, "Price_Ramadan_EGP": 172.11, "Has_Discount_Tag": true, "Price_Difference": 26.25, "Inflation_Percentage": 18.0, "Pricing_Status": "Fake Discount"}, {"Category": "Grains (Rice/Pasta)", "Item_Name": "Vermicelli 200g", "Price_Shaaban_EGP": 67.59, "Price_Ramadan_EGP": 79.76, "Has_Discount_Tag": false, "Price_Difference": 12.17, "Inflation_Percentage": 18.01, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Grains (Rice/Pasta)", "Item_Name": "Lentils Red 500g", "Price_Shaaban_EGP": 143.97, "Price_Ramadan_EGP": 169.88, "Has_Discount_Tag": false, "Price_Difference": 25.91, "Inflation_Percentage": 18.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Grains (Rice/Pasta)", "Item_Name": "Lentils Brown 500g", "Price_Shaaban_EGP": 29.95, "Price_Ramadan_EGP": 29.95, "Has_Discount_Tag": false, "Price_Difference": 0.0, "Inflation_Percentage": 0.0, "Pricing_Status": "Stable"}, {"Category": "Grains (Rice/Pasta)", "Item_Name": "Foul Beans 400g (Canned)", "Price_Shaaban_EGP": 104.11, "Price_Ramadan_EGP": 88.49, "Has_Discount_Tag": true, "Price_Difference": -15.62, "Inflation_Percentage": -15.0, "Pricing_Status": "Real Discount"}, {"Category": "Grains (Rice/Pasta)", "Item_Name": "Chickpeas 400g (Canned)", "Price_Shaaban_EGP": 112.22, "Price_Ramadan_EGP": 95.39, "Has_Discount_Tag": true, "Price_Difference": -16.83, "Inflation_Percentage": -15.0, "Pricing_Status": "Real Discount"}, {"Category": "Grains (Rice/Pasta)", "Item_Name": "Flour 1kg", "Price_Shaaban_EGP": 95.92, "Price_Ramadan_EGP": 113.19, "Has_Discount_Tag": false, "Price_Difference": 17.27, "Inflation_Percentage": 18.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Grains (Rice/Pasta)", "Item_Name": "Whole Wheat Flour 1kg", "Price_Shaaban_EGP": 49.85, "Price_Ramadan_EGP": 58.82, "Has_Discount_Tag": true, "Price_Difference": 8.97, "Inflation_Percentage": 17.99, "Pricing_Status": "Fake Discount"}, {"Category": "Grains (Rice/Pasta)", "Item_Name": "Bulgur Wheat 500g", "Price_Shaaban_EGP": 64.21, "Price_Ramadan_EGP": 75.77, "Has_Discount_Tag": false, "Price_Difference": 11.56, "Inflation_Percentage": 18.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Grains (Rice/Pasta)", "Item_Name": "Oats 500g", "Price_Shaaban_EGP": 138.59, "Price_Ramadan_EGP": 163.54, "Has_Discount_Tag": false, "Price_Difference": 24.95, "Inflation_Percentage": 18.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Grains (Rice/Pasta)", "Item_Name": "Semolina 500g", "Price_Shaaban_EGP": 31.3, "Price_Ramadan_EGP": 33.8, "Has_Discount_Tag": true, "Price_Difference": 2.5, "Inflation_Percentage": 7.99, "Pricing_Status": "Fake Discount"}, {"Category": "Grains (Rice/Pasta)", "Item_Name": "Breadcrumbs 250g", "Price_Shaaban_EGP": 52.65, "Price_Ramadan_EGP": 71.08, "Has_Discount_Tag": true, "Price_Difference": 18.43, "Inflation_Percentage": 35.0, "Pricing_Status": "Fake Discount"}, {"Category": "Grains (Rice/Pasta)", "Item_Name": "Couscous 500g", "Price_Shaaban_EGP": 144.67, "Price_Ramadan_EGP": 170.71, "Has_Discount_Tag": false, "Price_Difference": 26.04, "Inflation_Percentage": 18.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Grains (Rice/Pasta)", "Item_Name": "Barley 500g", "Price_Shaaban_EGP": 89.37, "Price_Ramadan_EGP": 100.09, "Has_Discount_Tag": false, "Price_Difference": 10.72, "Inflation_Percentage": 12.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Grains (Rice/Pasta)", "Item_Name": "Quinoa 250g", "Price_Shaaban_EGP": 45.72, "Price_Ramadan_EGP": 53.95, "Has_Discount_Tag": true, "Price_Difference": 8.23, "Inflation_Percentage": 18.0, "Pricing_Status": "Fake Discount"}, {"Category": "Grains (Rice/Pasta)", "Item_Name": "Cornmeal 500g", "Price_Shaaban_EGP": 21.45, "Price_Ramadan_EGP": 25.31, "Has_Discount_Tag": true, "Price_Difference": 3.86, "Inflation_Percentage": 18.0, "Pricing_Status": "Fake Discount"}, {"Category": "Oils & Ghee", "Item_Name": "Cooking Oil 800ml", "Price_Shaaban_EGP": 331.54, "Price_Ramadan_EGP": 447.58, "Has_Discount_Tag": false, "Price_Difference": 116.04, "Inflation_Percentage": 35.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Oils & Ghee", "Item_Name": "Sunflower Oil 1.5L", "Price_Shaaban_EGP": 154.75, "Price_Ramadan_EGP": 131.54, "Has_Discount_Tag": false, "Price_Difference": -23.21, "Inflation_Percentage": -15.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Oils & Ghee", "Item_Name": "Corn Oil 1L", "Price_Shaaban_EGP": 172.74, "Price_Ramadan_EGP": 233.2, "Has_Discount_Tag": false, "Price_Difference": 60.46, "Inflation_Percentage": 35.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Oils & Ghee", "Item_Name": "Olive Oil 750ml", "Price_Shaaban_EGP": 304.43, "Price_Ramadan_EGP": 328.78, "Has_Discount_Tag": true, "Price_Difference": 24.35, "Inflation_Percentage": 8.0, "Pricing_Status": "Fake Discount"}, {"Category": "Oils & Ghee", "Item_Name": "Olive Oil Extra Virgin 250ml", "Price_Shaaban_EGP": 303.85, "Price_Ramadan_EGP": 328.16, "Has_Discount_Tag": true, "Price_Difference": 24.31, "Inflation_Percentage": 8.0, "Pricing_Status": "Fake Discount"}, {"Category": "Oils & Ghee", "Item_Name": "Vegetable Ghee 1kg", "Price_Shaaban_EGP": 212.61, "Price_Ramadan_EGP": 287.02, "Has_Discount_Tag": false, "Price_Difference": 74.41, "Inflation_Percentage": 35.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Oils & Ghee", "Item_Name": "Vegetable Ghee 500g", "Price_Shaaban_EGP": 216.72, "Price_Ramadan_EGP": 205.88, "Has_Discount_Tag": false, "Price_Difference": -10.84, "Inflation_Percentage": -5.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Oils & Ghee", "Item_Name": "Animal Ghee 500g", "Price_Shaaban_EGP": 346.92, "Price_Ramadan_EGP": 329.57, "Has_Discount_Tag": false, "Price_Difference": -17.35, "Inflation_Percentage": -5.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Oils & Ghee", "Item_Name": "Sesame Oil 250ml", "Price_Shaaban_EGP": 311.99, "Price_Ramadan_EGP": 368.15, "Has_Discount_Tag": false, "Price_Difference": 56.16, "Inflation_Percentage": 18.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Oils & Ghee", "Item_Name": "Canola Oil 1L", "Price_Shaaban_EGP": 257.77, "Price_Ramadan_EGP": 278.39, "Has_Discount_Tag": true, "Price_Difference": 20.62, "Inflation_Percentage": 8.0, "Pricing_Status": "Fake Discount"}, {"Category": "Oils & Ghee", "Item_Name": "Soy Oil 1L", "Price_Shaaban_EGP": 290.9, "Price_Ramadan_EGP": 363.62, "Has_Discount_Tag": false, "Price_Difference": 72.72, "Inflation_Percentage": 25.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Oils & Ghee", "Item_Name": "Mixed Oil 1.5L", "Price_Shaaban_EGP": 323.1, "Price_Ramadan_EGP": 361.87, "Has_Discount_Tag": false, "Price_Difference": 38.77, "Inflation_Percentage": 12.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Oils & Ghee", "Item_Name": "Butter Oil 500g", "Price_Shaaban_EGP": 287.47, "Price_Ramadan_EGP": 339.21, "Has_Discount_Tag": false, "Price_Difference": 51.74, "Inflation_Percentage": 18.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Oils & Ghee", "Item_Name": "Palm Oil 1L", "Price_Shaaban_EGP": 286.7, "Price_Ramadan_EGP": 358.38, "Has_Discount_Tag": true, "Price_Difference": 71.68, "Inflation_Percentage": 25.0, "Pricing_Status": "Fake Discount"}, {"Category": "Oils & Ghee", "Item_Name": "Coconut Oil 200ml", "Price_Shaaban_EGP": 156.43, "Price_Ramadan_EGP": 148.61, "Has_Discount_Tag": false, "Price_Difference": -7.82, "Inflation_Percentage": -5.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Oils & Ghee", "Item_Name": "Spray Oil 250ml", "Price_Shaaban_EGP": 51.14, "Price_Ramadan_EGP": 57.28, "Has_Discount_Tag": false, "Price_Difference": 6.14, "Inflation_Percentage": 12.01, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Oils & Ghee", "Item_Name": "Smen (Aged Butter) 250g", "Price_Shaaban_EGP": 128.83, "Price_Ramadan_EGP": 144.29, "Has_Discount_Tag": true, "Price_Difference": 15.46, "Inflation_Percentage": 12.0, "Pricing_Status": "Fake Discount"}, {"Category": "Oils & Ghee", "Item_Name": "Rendered Fat 250g", "Price_Shaaban_EGP": 51.58, "Price_Ramadan_EGP": 64.47, "Has_Discount_Tag": true, "Price_Difference": 12.89, "Inflation_Percentage": 24.99, "Pricing_Status": "Fake Discount"}, {"Category": "Oils & Ghee", "Item_Name": "Tahini 500g", "Price_Shaaban_EGP": 79.39, "Price_Ramadan_EGP": 88.92, "Has_Discount_Tag": false, "Price_Difference": 9.53, "Inflation_Percentage": 12.0, "Pricing_Status": "Inflated (No Sale)"}, {"Category": "Oils & Ghee", "Item_Name": "Tahini 250g", "Price_Shaaban_EGP": 106.9, "Price_Ramadan_EGP": 126.14, "Has_Discount_Tag": true, "Price_Difference": 19.24, "Inflation_Percentage": 18.0, "Pricing_Status": "Fake Discount"}];
+const CATS = [["Grains (Rice/Pasta)", 10.75], ["Yamesh (Nuts/Dates)", 11.8], ["Dairy", 12.4], ["Meat & Poultry", 13.5], ["Oils & Ghee", 13.8]];
+const CNTS = {"Inflated (No Sale)": 54, "Stable": 6, "Fake Discount": 35, "Real Discount": 5};
+
+const DARK = '#0d1117';
+const SURFACE = '#161b22';
+const BORDER = '#21262d';
+const TEXT = '#e6edf3';
+const MUTED = '#7d8590';
+const GOLD = '#c9982a';
+
+const STATUS_COLORS = {
+  "Real Discount": "#3fb950",
+  "Fake Discount": "#f85149",
+  "Inflated (No Sale)": "#e3772d",
+  "Stable": "#58a6ff"
+};
+
+const axisStyle = {
+  gridcolor: BORDER,
+  zerolinecolor: '#21262d',
+  tickfont: {color: MUTED, size: 10, family: 'Space Mono'},
+  titlefont: {color: TEXT, size: 11, family: 'Space Mono'},
+  showgrid: true,
+};
+
+const baseLayout = {
+  paper_bgcolor: 'transparent',
+  plot_bgcolor: SURFACE,
+  font: {color: TEXT, family: 'Space Mono'},
+  margin: {t: 10, b: 50, l: 60, r: 30},
+  showlegend: false,
+};
+
+// ── SCATTER PLOT ───────────────────────────────────────────
+(function() {
+  const statuses = ["Real Discount","Fake Discount","Inflated (No Sale)","Stable"];
+  const traces = statuses.map(status => {
+    const pts = DATA.filter(d => d.Pricing_Status === status);
+    return {
+      type: 'scatter',
+      mode: 'markers',
+      name: status,
+      x: pts.map(d => d.Price_Shaaban_EGP),
+      y: pts.map(d => d.Price_Ramadan_EGP),
+      customdata: pts.map(d => [d.Item_Name, d.Price_Difference, d.Inflation_Percentage, d.Category, d.Has_Discount_Tag]),
+      hovertemplate:
+        '<b>%{customdata[0]}</b><br>' +
+        'Category: %{customdata[3]}<br>' +
+        'Shaaban: <b>%{x:.0f} EGP</b><br>' +
+        'Ramadan: <b>%{y:.0f} EGP</b><br>' +
+        'Diff: <b>%{customdata[1]:+.1f} EGP (%{customdata[2]:+.1f}%)</b><br>' +
+        'Discount Tag: %{customdata[4]}' +
+        '<extra></extra>',
+      marker: {
+        color: STATUS_COLORS[status],
+        size: 10,
+        opacity: 0.88,
+        line: {color: 'rgba(255,255,255,0.15)', width: 0.8},
+      }
+    };
+  });
+
+  const allPrices = DATA.flatMap(d => [d.Price_Shaaban_EGP, d.Price_Ramadan_EGP]);
+  const maxP = Math.max(...allPrices) + 30;
+
+  traces.push({
+    type: 'scatter',
+    mode: 'lines',
+    name: 'No Change',
+    x: [0, maxP], y: [0, maxP],
+    line: {color: 'rgba(255,255,255,0.22)', dash: 'dash', width: 1.5},
+    hoverinfo: 'skip',
+    showlegend: false,
+  });
+
+  Plotly.newPlot('scatter', traces, {
+    ...baseLayout,
+    xaxis: {...axisStyle, title: 'Shaaban Price (EGP)', range: [0, maxP]},
+    yaxis: {...axisStyle, title: 'Ramadan Price (EGP)', range: [0, maxP]},
+    margin: {t:10, b:50, l:65, r:20},
+  }, {responsive: true, displayModeBar: false});
+})();
+
+// ── PIE CHART ──────────────────────────────────────────────
+(function() {
+  const statuses = Object.keys(CNTS);
+  const values   = statuses.map(s => CNTS[s]);
+  const colors   = statuses.map(s => STATUS_COLORS[s]);
+
+  Plotly.newPlot('pie', [{
+    type: 'pie',
+    labels: statuses,
+    values: values,
+    marker: {colors, line: {color: '#080c10', width: 2}},
+    textinfo: 'label+percent',
+    textfont: {size: 11, color: TEXT, family: 'Space Mono'},
+    hovertemplate: '<b>%{label}</b><br>Items: %{value}<br>Share: %{percent}<extra></extra>',
+    hole: 0.42,
+    pull: statuses.map(s => s === 'Fake Discount' ? 0.06 : 0),
+    rotation: 30,
+  }], {
+    ...baseLayout,
+    margin: {t: 10, b: 20, l: 20, r: 20},
+  }, {responsive: true, displayModeBar: false});
+})();
+
+// ── BAR CHART ──────────────────────────────────────────────
+(function() {
+  const cats   = CATS.map(c => c[0]);
+  const values = CATS.map(c => c[1]);
+  const colors = values.map(v => v >= 0 ? '#f85149' : '#3fb950');
+
+  Plotly.newPlot('bar', [{
+    type: 'bar',
+    orientation: 'h',
+    x: values,
+    y: cats,
+    marker: {color: colors, opacity: 0.9},
+    text: values.map(v => (v >= 0 ? '+' : '') + v.toFixed(1) + '%'),
+    textposition: 'outside',
+    textfont: {color: TEXT, size: 11, family: 'Space Mono'},
+    hovertemplate: '<b>%{y}</b><br>Avg Inflation: <b>%{x:+.2f}%</b><extra></extra>',
+  }], {
+    ...baseLayout,
+    xaxis: {...axisStyle, title: 'Average Inflation %', zeroline: true, zerolinecolor: '#58a6ff', zerolinewidth: 1.5},
+    yaxis: {...axisStyle, title: ''},
+    margin: {t: 8, b: 50, l: 180, r: 80},
+  }, {responsive: true, displayModeBar: false});
+})();
+</script>
+</body>
+</html>
