@@ -571,6 +571,9 @@
 
     </div>
   </div>
+  <h3 class="text-2xl font-bold text-white mt-16 mb-8 orbitron border-b border-slate-700 pb-2">Latest GitHub Repositories</h3>
+<div id="github-projects-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    </div>
 </section>
 
 <!-- ═══════════════ AWARDS & CERTIFICATIONS ═══════════════ -->
@@ -829,6 +832,60 @@
       setTimeout(() => el.classList.add("visible"), 200 + i * 120);
     });
   });
+</script>
+  <script>
+  async function fetchGitHubProjects() {
+    const username = 'albraa2002'; // اليوزر نيم بتاعك
+    const container = document.getElementById('github-projects-grid');
+
+    try {
+      // سحب البيانات من جيت هاب وترتيبها بالأحدث
+      const response = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&direction=desc`);
+      const repos = await response.json();
+
+      // فلترة المشاريع: استبعاد الـ Forks، واختيار أحدث 6 مشاريع فقط
+      const myRepos = repos.filter(repo => !repo.fork).slice(0, 6);
+
+      let htmlContent = '';
+
+      myRepos.forEach(repo => {
+        // تحديد اللغة المستخدمة (لو مفيش هيكتب Data/Code)
+        const language = repo.language || 'Data / Code';
+        // تنظيف اسم المشروع من الشرط (-)
+        const cleanName = repo.name.replace(/-/g, ' ');
+
+        htmlContent += `
+          <div class="project-card bg-slate-800/40 border border-slate-700 rounded-xl p-6 hover:border-cyan-400/50 hover:-translate-y-1 transition duration-300 flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-start mb-4">
+                <h3 class="text-xl font-bold text-white orbitron capitalize">${cleanName}</h3>
+                <i class="fab fa-github text-2xl text-slate-400"></i>
+              </div>
+              <p class="text-slate-300 mb-4 text-sm h-12 overflow-hidden">${repo.description || 'Data Analysis & ML Project.'}</p>
+              <div class="flex flex-wrap gap-2 mb-6">
+                <span class="text-xs font-semibold px-2 py-1 bg-slate-900 text-cyan-400 rounded border border-cyan-900/50">
+                  <i class="fas fa-code mr-1"></i> ${language}
+                </span>
+              </div>
+            </div>
+            <div class="flex gap-4">
+              <a href="${repo.html_url}" target="_blank" class="text-sm font-bold text-cyan-400 hover:text-cyan-300 transition flex items-center gap-1">
+                View Repository <i class="fas fa-arrow-right"></i>
+              </a>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = htmlContent;
+    } catch (error) {
+      console.error('Error fetching GitHub repos:', error);
+      container.innerHTML = '<p class="text-slate-400">Loading projects...</p>';
+    }
+  }
+
+  // تشغيل السكريبت أول ما الموقع يفتح
+  document.addEventListener('DOMContentLoaded', fetchGitHubProjects);
 </script>
 </body>
 </html>
